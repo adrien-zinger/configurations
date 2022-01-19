@@ -13,7 +13,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "adrinator"; # Define your hostname.
+  networking.hostName = "adrien"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Set your time zone.
@@ -41,6 +41,9 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
+  # To use Flatpak you must enable XDG Desktop Portals with xdg.portal.enable.
+  xdg.portal.enable = true;
+  services.flatpak.enable = true;
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
@@ -77,26 +80,56 @@
     discord
     git
     vscode
+    powertop acpi
   ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  programs.mtr.enable = true;
-  programs.gnupg.agent = {
+
+  documentation.dev.enable = true;
+  environment.extraOutputsToInstall = [ "info" "man" "devman" ];
+
+  users.defaultUserShell = pkgs.zsh;
+  programs.zsh = {
     enable = true;
-    enableSSHSupport = true;
+    enableCompletion = true;
+    autosuggestions.enable = true;
+    promptInit = ''
+      source ${pkgs.grml-zsh-config}/etc/zsh/zshrc
+    '';
   };
 
-  # List services that you want to enable:
+
+  # Auto upgrade the system =-)
+  system.autoUpgrade.enable = true;
+
+  # Do the garbage collection & optimisation weekly.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
+  nix.optimise.automatic = true;
+
+  # Open ports in the firewall.
+  networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall.allowedUDPPorts = [ ];
+
+  networking.nameservers = [
+    "2a07:a8c0::85:4ac4"
+    "2a07:a8c1::85:4ac4"
+    "45.90.28.69"
+    "45.90.30.69"
+  ]; # NextDNS
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  networking.firewall.enable = false;
+  # Power management
+  powerManagement.enable = true;
+  services.upower.enable = true;
+  services.thermald.enable = true;
+  services.tlp.enable = true;
+  services.power-profiles-daemon.enable = false;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
