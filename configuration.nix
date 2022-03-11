@@ -77,12 +77,55 @@
     wget
     firefox
     rustup
+    gcc
+    cmake
+    vscode-with-extensions
+    pkg-config
+    openssl
+    bintools-unwrapped
     discord
     git
-    vscode
     powertop acpi
+    direnv nix-direnv
+    konsole
+    gnupg1 # in user you may want to `add default-cache-ttl 3600` in ~/.gnupg/gpg-agent.conf
+    pinentry # Don't forget to add the line bellow
+    pinentry-curses
+    protobuf # Needed by tokio-console-subscriber
+    nodejs
+    yarn
   ];
 
+  environment.sessionVariables = rec {
+    RUST_BACKTRACE = "1";
+    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+    RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+  };
+
+  # To use correctly gpg, in the user you should have:
+  # $ cat ~/.gnupg/gpg-agent.conf
+  # pinentry-program /run/current-system/sw/bin/pinentry
+ 
+  services.pcscd.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    pinentryFlavor = "curses";
+    enableSSHSupport = true;
+  };
+
+  # nix options for derivations to persist garbage collection
+  nix.extraOptions = ''
+    keep-outputs = true
+    keep-derivations = true
+  '';
+  environment.pathsToLink = [
+    "/share/nix-direnv"
+  ];
+  # if you also want support for flakes (this makes nix-direnv use the
+  # unstable version of nix):
+  nixpkgs.overlays = [
+    (self: super: { nix-direnv = super.nix-direnv.override { enableFlakes = true; }; } )
+  ];
 
   documentation.dev.enable = true;
   environment.extraOutputsToInstall = [ "info" "man" "devman" ];
