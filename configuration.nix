@@ -47,8 +47,24 @@
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-  
+  # todo Enable i3 Desktop Environment too
+  services.xserver = {
+
+    desktopManager = {
+      gnome.enable = true;
+    };
+   
+    #windowManager.i3 = {
+    #  enable = true;
+    #  extraPackages = with pkgs; [
+    #    dmenu #application launcher most people use
+    #    i3status # gives you the default i3 status bar
+    #    i3lock #default i3 screen locker
+    #    i3blocks #if you are planning on using i3blocks over i3status
+    # ];
+    #};
+  };
+  # todo make xmonad work => services.xserver.windowManager.xmonad.enable = true;
 
   # Configure keymap in X11
   services.xserver.layout = "fr";
@@ -65,21 +81,32 @@
   services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
+  # uncomment to get docker
+  # virtualisation.docker.enable = true;
   users.users.adrien = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "docker" ]; # Enable ‘sudo’ for the user.
   };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
+    # wget
     firefox
     rustup
-    gcc
     cmake
-    vscode-with-extensions
+    # (vscode-with-extensions.override {
+    #   vscodeExtensions = with pkgs.vscode-extensions; [
+    #     github.github-vscode-theme
+    #     github.vscode-pull-request-github
+    #     matklad.rust-analyzer
+    #     ms-vsliveshare.vsliveshare
+    #     eamodio.gitlens
+    #     yzhang.markdown-all-in-one
+    #     jnoortheen.nix-ide
+    #     ms-vscode.cpptools
+    #   ];
+    # })
     pkg-config
     openssl
     bintools-unwrapped
@@ -87,19 +114,63 @@
     git
     powertop acpi
     direnv nix-direnv
-    konsole
     gnupg1 # in user you may want to `add default-cache-ttl 3600` in ~/.gnupg/gpg-agent.conf
     pinentry # Don't forget to add the line bellow
     pinentry-curses
     protobuf # Needed by tokio-console-subscriber
+
     nodejs
     yarn
+
+    gnumake
+    gcc
   ];
 
-  environment.sessionVariables = rec {
-    RUST_BACKTRACE = "1";
-    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
-    RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+  # I prefer to try to load the packages
+  programs.neovim = {
+    enable = true;
+    configure = {
+
+      plug.plugins = with pkgs.vimPlugins; [
+        # trying to make that working
+        #{
+        #  rtp = nvim-base16;
+        #  config = ''
+        #    packadd! nvim-base16.lua
+        #    vim.cmd('colorscheme base16-gruvbox-dark-soft')
+        #  '';
+        #}
+        vim-nix
+        # fzf-lsp-nvim
+        nerdtree
+        vim-monokai
+        # and what about that ? rust-vim
+        vim-markdown
+      ];
+
+      customRC = ''
+        syntax on
+        colorscheme monokai
+        set number
+        set relativenumber
+
+        highlight ExtraWhitespace ctermbg=red guibg=red
+        autocmd BufWritePre * %s/\s\+$//e
+      '';
+    };
+    viAlias = true;
+    # configure.customRC = builtins.readFile /home/adrien/.config/nvim/init.vim;
+  };
+
+  environment = {
+    sessionVariables = rec {
+      RUST_BACKTRACE = "1";
+      PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+      RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+    };
+    pathsToLink = [
+      "/share/nix-direnv"
+    ];
   };
 
   # To use correctly gpg, in the user you should have:
@@ -118,9 +189,6 @@
     keep-outputs = true
     keep-derivations = true
   '';
-  environment.pathsToLink = [
-    "/share/nix-direnv"
-  ];
   # if you also want support for flakes (this makes nix-direnv use the
   # unstable version of nix):
   nixpkgs.overlays = [
@@ -183,4 +251,3 @@
   system.stateVersion = "21.11"; # Did you read the comment?
 
 }
-
