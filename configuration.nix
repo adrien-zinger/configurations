@@ -2,10 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   imports =
     [ # Include the results of the hardware scan.
+      ./networking.nix
+      ./desktop.nix
       ./hardware-configuration.nix
     ];
 
@@ -13,23 +15,20 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "adrien"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  # use proprietary nvidia pkgs
+  # services.xserver.videoDrivers = [ "nvidia" ];
+  # Optionally, you may need to select the appropriate driver version for your specific GPU.
+
+  # donnow if I need that
+  # hardware.opengl.enable = true;
+  # because my hardware has an nvidia who isn't linux compatible :-(
+  services.xserver.videoDrivers = ["nvidia"];
+  hardware.nvidia.powerManagement.enable = true;
 
   # Set your time zone.
   time.timeZone = "Europe/Madrid";
-
-  # The global useDHCP flag is deprecated, therefore explicitly set to false here.
-  # Per-interface useDHCP will be mandatory in the future, so this generated config
-  # replicates the default behaviour.
-  networking.useDHCP = false;
-  networking.interfaces.wlp0s20f3.useDHCP = true;
-
   nixpkgs.config.allowUnfree = true;
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "fr_FR.UTF-8";
@@ -38,54 +37,15 @@
     keyMap = "fr";
   };
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # To use Flatpak you must enable XDG Desktop Portals with xdg.portal.enable.
-  xdg.portal.enable = true;
-  services.flatpak.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  # todo Enable i3 Desktop Environment too
-  services.xserver = {
-
-    desktopManager = {
-      gnome.enable = true;
-    };
-   
-    #windowManager.i3 = {
-    #  enable = true;
-    #  extraPackages = with pkgs; [
-    #    dmenu #application launcher most people use
-    #    i3status # gives you the default i3 status bar
-    #    i3lock #default i3 screen locker
-    #    i3blocks #if you are planning on using i3blocks over i3status
-    # ];
-    #};
-  };
-  # todo make xmonad work => services.xserver.windowManager.xmonad.enable = true;
-
-  # Configure keymap in X11
-  services.xserver.layout = "fr";
-  services.xserver.xkbOptions = "eurosign:e";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  services.xserver.libinput.enable = true;
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   # uncomment to get docker
   # virtualisation.docker.enable = true;
   users.users.adrien = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "docker" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [
+      "wheel" # Enable ‘sudo’ for the user.
+      # "docker" if u want docker
+    ];
   };
 
   # List packages installed in system profile. To search, run:
@@ -93,8 +53,6 @@
   environment.systemPackages = with pkgs; [
     # wget
     firefox
-    rustup
-    cmake
     # (vscode-with-extensions.override {
     #   vscodeExtensions = with pkgs.vscode-extensions; [
     #     github.github-vscode-theme
@@ -109,21 +67,28 @@
     # })
     pkg-config
     openssl
-    bintools-unwrapped
     discord
+
+    # dev tools
     git
+    nodejs
+    yarn
+    rustup
+    protobuf # Needed by tokio-console-subscriber
+    cmake
+    # gnumake
+    # gcc <--- in bintools
+    bintools-unwrapped
+
+    # power management tools
     powertop acpi
+
+    # nix + direnv <3
     direnv nix-direnv
+
     gnupg1 # in user you may want to `add default-cache-ttl 3600` in ~/.gnupg/gpg-agent.conf
     pinentry # Don't forget to add the line bellow
     pinentry-curses
-    protobuf # Needed by tokio-console-subscriber
-
-    nodejs
-    yarn
-
-    gnumake
-    gcc
   ];
 
   # I prefer to try to load the packages
@@ -132,14 +97,6 @@
     configure = {
 
       plug.plugins = with pkgs.vimPlugins; [
-        # trying to make that working
-        #{
-        #  rtp = nvim-base16;
-        #  config = ''
-        #    packadd! nvim-base16.lua
-        #    vim.cmd('colorscheme base16-gruvbox-dark-soft')
-        #  '';
-        #}
         vim-nix
         # fzf-lsp-nvim
         nerdtree
@@ -148,15 +105,7 @@
         vim-markdown
       ];
 
-      customRC = ''
-        syntax on
-        colorscheme monokai
-        set number
-        set relativenumber
-
-        highlight ExtraWhitespace ctermbg=red guibg=red
-        autocmd BufWritePre * %s/\s\+$//e
-      '';
+      customRC = builtins.readFile ./conf.vim;
     };
     viAlias = true;
     # configure.customRC = builtins.readFile /home/adrien/.config/nvim/init.vim;
@@ -176,7 +125,7 @@
   # To use correctly gpg, in the user you should have:
   # $ cat ~/.gnupg/gpg-agent.conf
   # pinentry-program /run/current-system/sw/bin/pinentry
- 
+
   services.pcscd.enable = true;
   programs.gnupg.agent = {
     enable = true;
@@ -221,16 +170,6 @@
 
   nix.optimise.automatic = true;
 
-  # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 22 ];
-  networking.firewall.allowedUDPPorts = [ ];
-
-  networking.nameservers = [
-    "2a07:a8c0::85:4ac4"
-    "2a07:a8c1::85:4ac4"
-    "45.90.28.69"
-    "45.90.30.69"
-  ]; # NextDNS
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
@@ -240,7 +179,34 @@
   services.upower.enable = true;
   services.thermald.enable = true;
   services.tlp.enable = true;
+  services.tlp.settings = let
+      cfg = config.powerManagement;
+      maybeDefault = val: lib.mkIf (val != null) (lib.mkDefault val);
+  in {
+      TLP_ENABLE = 1;
+      TLP_DEFAULT_MODE = "BAT";
+      CPU_SCALING_GOVERNOR_ON_AC = maybeDefault cfg.cpuFreqGovernor;
+      CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+      USB_AUTOSUSPEND = 1;
+      START_CHARGE_THRESH_BAT0 = 75;
+      STOP_CHARGE_THRESH_BAT0 = 80;
+      START_CHARGE_THRESH_BAT1 = 75;
+      STOP_CHARGE_THRESH_BAT1 = 80;
+      CPU_MIN_PERF_ON_AC = 0;
+      CPU_MAX_PERF_ON_AC = 100;
+      CPU_MIN_PERF_ON_BAT = 0;
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_power";
+      CPU_MAX_PERF_ON_BAT = 30;
+      INTEL_GPU_MIN_FREQ_ON_AC = 350;
+      INTEL_GPU_MIN_FREQ_ON_BAT = 350;
+      INTEL_GPU_MAX_FREQ_ON_AC = 1450;
+      INTEL_GPU_MAX_FREQ_ON_BAT = 700;
+      INTEL_GPU_BOOST_FREQ_ON_AC = 1450;
+      INTEL_GPU_BOOST_FREQ_ON_BAT = 700;
+  };
   services.power-profiles-daemon.enable = false;
+
+
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
