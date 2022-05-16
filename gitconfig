@@ -1,0 +1,29 @@
+[user]
+	email = zinger.ad@gmail.com
+	name = Adrien Zinger
+[alias]
+	st = status
+	la = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all --not origin/gh-pages
+	l = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'
+	b = checkout -b
+	showfiles = show --pretty=\"format:\" --name-status
+	amend = commit --amend --no-edit
+	co = "!f() { git checkout "*$1*"; }; f"
+	alias = config --get-regexp alias
+	ad = "!f() { git add "*$1*"; }; f"
+	h = rev-parse --verify
+	showalias = config --get-regexp alias
+	patch = "!f() { git am --signoff -k $1; }; f"
+	fpatch = "!f() { git format-patch --signoff -k --output-directory $1; }; f"
+[push]
+	default = simple
+[filter "lfs"]
+	clean = git-lfs clean %f
+	smudge = git-lfs smudge %f
+	required = true
+[commit]
+	gpgsign = true
+[init]
+	defaultBranch = main
+[core]
+	editor = vi
