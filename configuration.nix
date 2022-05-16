@@ -22,7 +22,7 @@
 
   # donnow if I need that
   # hardware.opengl.enable = true;
-  # 
+  #
   # nouveau is enough for desktop
   # services.xserver.videoDrivers = ["nvidia"];
   # hardware.nvidia.powerManagement.enable = true;
@@ -32,11 +32,15 @@
   nixpkgs.config.allowUnfree = true;
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "fr_FR.UTF-8";
+  i18n.defaultLocale = "en_US.UTF-8";
   console = {
     font = "Lat2-Terminus16";
-    keyMap = "fr";
+    keyMap = "us";
   };
+
+  # Configure keymap in X11
+  services.xserver.layout = "us";
+  services.xserver.xkbOptions = "eurosign:e";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   # uncomment to get docker

@@ -58,10 +58,6 @@
     lxappearance
   ];
 
-  # Configure keymap in X11
-  services.xserver.layout = "fr";
-  services.xserver.xkbOptions = "eurosign:e";
-
   environment.etc = {
     "sway/config".source = ./sway/config;
     "gitconfig".source = ./gitconfig;

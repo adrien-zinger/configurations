@@ -7,7 +7,8 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.wlp0s20f3.useDHCP = true;
+  networking.interfaces.eno1.useDHCP = true;
+  # enp0s31f6
 
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 22 ];
