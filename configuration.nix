@@ -8,6 +8,7 @@
     [ # Include the results of the hardware scan.
       ./networking.nix
       ./desktop.nix
+      <nixos-hardware/dell/precision/5530>
       ./hardware-configuration.nix
     ];
 
@@ -44,6 +45,7 @@
     isNormalUser = true;
     extraGroups = [
       "wheel" # Enable ‘sudo’ for the user.
+      "networkManager"
       # "docker" if u want docker
     ];
   };
@@ -76,9 +78,10 @@
     rustup
     protobuf # Needed by tokio-console-subscriber
     cmake
-    # gnumake
-    # gcc <--- in bintools
+    gnumake
+    gcc# <--- in bintools
     bintools-unwrapped
+    glibc
 
     # power management tools
     powertop acpi
@@ -100,8 +103,14 @@
         vim-nix
         # fzf-lsp-nvim
         nerdtree
-        vim-monokai
+        vim-monokai-pro
+        nvim-treesitter
+        vim-surround
+        rainbow
         # and what about that ? rust-vim
+        rust-vim
+        rust-tools-nvim
+        nvim-lspconfig
         vim-markdown
       ];
 
