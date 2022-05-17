@@ -8,6 +8,7 @@
     [ # Include the results of the hardware scan.
       ./networking.nix
       ./desktop.nix
+      <nixos-hardware/dell/precision/5530>
       ./hardware-configuration.nix
     ];
 
@@ -49,6 +50,7 @@
     isNormalUser = true;
     extraGroups = [
       "wheel" # Enable ‘sudo’ for the user.
+      "networkManager"
       # "docker" if u want docker
     ];
   };
@@ -58,18 +60,18 @@
   environment.systemPackages = with pkgs; [
     # wget
     firefox
-    (vscode-with-extensions.override {
-      vscodeExtensions = with pkgs.vscode-extensions; [
-        github.github-vscode-theme
-        github.vscode-pull-request-github
-        matklad.rust-analyzer
-        ms-vsliveshare.vsliveshare
-        eamodio.gitlens
-        yzhang.markdown-all-in-one
-        jnoortheen.nix-ide
-        ms-vscode.cpptools
-      ];
-    })
+    # (vscode-with-extensions.override {
+    #   vscodeExtensions = with pkgs.vscode-extensions; [
+    #     github.github-vscode-theme
+    #     github.vscode-pull-request-github
+    #     matklad.rust-analyzer
+    #     ms-vsliveshare.vsliveshare
+    #     eamodio.gitlens
+    #     yzhang.markdown-all-in-one
+    #     jnoortheen.nix-ide
+    #     ms-vscode.cpptools
+    #   ];
+    # })
     pkg-config
     openssl
     discord
@@ -81,9 +83,10 @@
     rustup
     protobuf # Needed by tokio-console-subscriber
     cmake
-    # gnumake
-    # gcc <--- in bintools
+    gnumake
+    gcc# <--- in bintools
     bintools-unwrapped
+    glibc
 
     # power management tools
     powertop acpi
@@ -105,8 +108,14 @@
         vim-nix
         # fzf-lsp-nvim
         nerdtree
-        vim-monokai
+        vim-monokai-pro
+        nvim-treesitter
+        vim-surround
+        rainbow
         # and what about that ? rust-vim
+        rust-vim
+        rust-tools-nvim
+        nvim-lspconfig
         vim-markdown
       ];
 
