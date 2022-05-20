@@ -63,7 +63,7 @@ output * bg /etc/nixos/wallpaper_wolf.png fill
 # Read `man 5 sway-input` for more information about this section.
 
 bindsym $mod+Tab workspace back_and_forth
-bindsym $mod+l exec swaylock -i /etc/nixos/wolf_blured.png
+bindsym $mod+l exec gsettings set org.gnome.desktop.lockdown disable-lock-screen true && swaylock -i /etc/nixos/wolf_blured.png
 
 input * {
   xkb_layout "fr"
