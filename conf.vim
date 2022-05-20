@@ -2,7 +2,10 @@ syntax on
 
 
 " color scheme, monokai with my flavours
-colorscheme monokai_pro
+" colorscheme monokai_pro
+
+lua require('zephyr')
+
 hi Keyword ctermfg=red guifg=red
 filetype plugin indent on
 
@@ -13,7 +16,15 @@ set number
 set relativenumber
 
 " Don't select line number
-se mouse+=a
+se mouse+=a " remember `"+y` and `"*y`
+
+nnoremap <C-t> :NERDTreeToggle<CR>
+nnoremap <C-f> :NERDTreeFind<CR>
+" GoTo code navigation. (coc-nvim)
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
 
 " rust-vim option to format on save
 let g:rustfmt_autosave = 1
