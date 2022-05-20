@@ -117,6 +117,8 @@
         rust-tools-nvim
         nvim-lspconfig
         vim-markdown
+        coc-nvim
+        zephyr-nvim
       ];
 
       customRC = builtins.readFile ./conf.vim;
