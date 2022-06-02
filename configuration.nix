@@ -84,6 +84,7 @@
     protobuf # Needed by tokio-console-subscriber
     cmake
     gnumake
+    clang
     gcc# <--- in bintools
     bintools-unwrapped
     glibc
