@@ -45,13 +45,13 @@
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   # uncomment to get docker
-  # virtualisation.docker.enable = true;
+  virtualisation.docker.enable = true;
   users.users.adrien = {
     isNormalUser = true;
     extraGroups = [
       "wheel" # Enable ‘sudo’ for the user.
       "networkManager"
-      # "docker" if u want docker
+      "docker" # if u want docker
     ];
   };
 
@@ -85,6 +85,11 @@
     cmake
     gnumake
     clang
+    libclang
+    llvmPackages_14.llvm
+    llvmPackages.libclang
+    llvmPackages.libcxxClang
+
     gcc# <--- in bintools
     bintools-unwrapped
     glibc
@@ -133,6 +138,8 @@
       RUST_BACKTRACE = "1";
       PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
       RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+      LIBCLANG_PATH = "${pkgs.llvmPackages_14.libclang.lib}/lib";
+      BINDGEN_EXTRA_CLANG_ARGS = "-isystem ${pkgs.llvmPackages.libclang.lib}/lib/clang/${lib.getVersion pkgs.clang}/include";
     };
     pathsToLink = [
       "/share/nix-direnv"
@@ -144,6 +151,7 @@
   # pinentry-program /run/current-system/sw/bin/pinentry
 
   services.pcscd.enable = true;
+  programs.mosh.enable = true;
   programs.gnupg.agent = {
     enable = true;
     pinentryFlavor = "curses";
